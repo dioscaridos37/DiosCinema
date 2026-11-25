@@ -40,6 +40,9 @@ jobs:
           base64 -d project.zip.b64 > project.zip
           unzip -q project.zip
           test -f DiosCinema/app/src/main/java/com/dios/cinema/MainActivity.kt
+          # Use Google's Maven Central mirror to avoid transient Maven Central rate limits.
+          sed -i 's/mavenCentral()/maven { url = uri("https:\/\/maven-central.storage-download.googleapis.com\/maven2\/") }; mavenCentral()/g' DiosCinema/settings.gradle.kts
+          cat DiosCinema/settings.gradle.kts
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -48,7 +51,15 @@ jobs:
 
       - name: Build debug APK
         working-directory: DiosCinema
-        run: gradle --no-daemon assembleDebug
+        run: |
+          for attempt in 1 2 3; do
+            if gradle --no-daemon --refresh-dependencies assembleDebug; then
+              exit 0
+            fi
+            echo "Build attempt $attempt failed; retrying after a short pause..."
+            sleep 20
+          done
+          exit 1
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

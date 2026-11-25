@@ -39,6 +39,7 @@ jobs:
         run: |
           base64 -d project.zip.b64 > project.zip
           unzip -q project.zip
+          cp MainActivity_v110.kt DiosCinema/app/src/main/java/com/dios/cinema/MainActivity.kt
           test -f DiosCinema/app/src/main/java/com/dios/cinema/MainActivity.kt
           # Use Google's Maven Central mirror to avoid transient Maven Central rate limits.
           sed -i 's/mavenCentral()/maven { url = uri("https:\/\/maven-central.storage-download.googleapis.com\/maven2\/") }; mavenCentral()/g' DiosCinema/settings.gradle.kts
